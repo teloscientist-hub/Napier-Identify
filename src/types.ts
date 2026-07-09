@@ -30,6 +30,9 @@ export type SearchQuery = {
   queryId: string;
   createdAt: string;
   imageUri: string;
+  originalImageUri: string;
+  imageWidth: number;
+  imageHeight: number;
   crop: {
     x: number;
     y: number;
@@ -42,8 +45,13 @@ export type SearchQuery = {
 
 export type LocalQueryImage = {
   localUri: string;
+  originalUri: string;
   width: number;
   height: number;
+  originalWidth: number;
+  originalHeight: number;
+  compressionQuality: number;
+  resizedForUpload: boolean;
   source: "camera" | "library";
   capturedAt: string;
   crop: {

@@ -78,6 +78,9 @@ export function AppShell() {
     if (result.status === "denied") {
       setMediaError(result.message);
     }
+    if (result.status === "canceled") {
+      setMediaError(result.message);
+    }
     if (result.status === "selected") {
       setQueryImage(result.image);
       setScreen("captureReview");
@@ -90,6 +93,9 @@ export function AppShell() {
 
     const result = await importQueryPhoto();
     if (result.status === "denied") {
+      setMediaError(result.message);
+    }
+    if (result.status === "canceled") {
       setMediaError(result.message);
     }
     if (result.status === "selected") {

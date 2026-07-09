@@ -21,9 +21,16 @@ export function CaptureReviewScreen({
       <Text style={styles.sectionTitle}>Use this photo?</Text>
       <Text style={styles.warning}>This may be hard to identify if the jewelry is small or the background is busy.</Text>
       {image ? (
-        <Text style={styles.meta}>
-          {image.width} x {image.height} px | {image.source}
-        </Text>
+        <View style={styles.infoBlock}>
+          <Text style={styles.infoTitle}>Image prepared for search</Text>
+          <Text style={styles.bullet}>
+            - Original: {image.originalWidth} x {image.originalHeight} px
+          </Text>
+          <Text style={styles.bullet}>
+            - Upload: {image.width} x {image.height} px, JPEG quality {Math.round(image.compressionQuality * 100)}%
+          </Text>
+          <Text style={styles.bullet}>- Source: {image.source}</Text>
+        </View>
       ) : null}
       <PrimaryButton label="Use Photo" onPress={onUsePhoto} />
       <SecondaryButton label="Crop / Isolate Object" onPress={onCrop} />

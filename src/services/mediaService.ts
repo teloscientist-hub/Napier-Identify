@@ -1,9 +1,13 @@
+import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
 import { LocalQueryImage } from "../types";
 
+const maxUploadDimension = 1600;
+const uploadCompressionQuality = 0.82;
+
 export type MediaSelectionResult =
   | { status: "selected"; image: LocalQueryImage }
-  | { status: "canceled" }
+  | { status: "canceled"; message: string }
   | { status: "denied"; message: string };
 
 export async function takeQueryPhoto(): Promise<MediaSelectionResult> {
@@ -23,10 +27,10 @@ export async function takeQueryPhoto(): Promise<MediaSelectionResult> {
   });
 
   if (result.canceled) {
-    return { status: "canceled" };
+    return { status: "canceled", message: "Camera was closed before a photo was selected." };
   }
 
-  return { status: "selected", image: createLocalQueryImage(result.assets[0], "camera") };
+  return { status: "selected", image: await createLocalQueryImage(result.assets[0], "camera") };
 }
 
 export async function importQueryPhoto(): Promise<MediaSelectionResult> {
@@ -47,10 +51,10 @@ export async function importQueryPhoto(): Promise<MediaSelectionResult> {
   });
 
   if (result.canceled) {
-    return { status: "canceled" };
+    return { status: "canceled", message: "Photo import was canceled before an image was selected." };
   }
 
-  return { status: "selected", image: createLocalQueryImage(result.assets[0], "library") };
+  return { status: "selected", image: await createLocalQueryImage(result.assets[0], "library") };
 }
 
 export function createMockCrop(image: LocalQueryImage): NonNullable<LocalQueryImage["crop"]> {
@@ -62,13 +66,38 @@ export function createMockCrop(image: LocalQueryImage): NonNullable<LocalQueryIm
   };
 }
 
-function createLocalQueryImage(asset: ImagePicker.ImagePickerAsset, source: LocalQueryImage["source"]): LocalQueryImage {
+async function createLocalQueryImage(asset: ImagePicker.ImagePickerAsset, source: LocalQueryImage["source"]): Promise<LocalQueryImage> {
+  const originalWidth = asset.width ?? 0;
+  const originalHeight = asset.height ?? 0;
+  const resizeAction = createResizeAction(originalWidth, originalHeight);
+  const uploadAsset = await ImageManipulator.manipulateAsync(asset.uri, resizeAction ? [resizeAction] : [], {
+    compress: uploadCompressionQuality,
+    format: ImageManipulator.SaveFormat.JPEG,
+  });
+
   return {
-    localUri: asset.uri,
-    width: asset.width ?? 0,
-    height: asset.height ?? 0,
+    localUri: uploadAsset.uri,
+    originalUri: asset.uri,
+    width: uploadAsset.width,
+    height: uploadAsset.height,
+    originalWidth,
+    originalHeight,
+    compressionQuality: uploadCompressionQuality,
+    resizedForUpload: Boolean(resizeAction),
     source,
     capturedAt: new Date().toISOString(),
     crop: null,
   };
+}
+
+function createResizeAction(width: number, height: number): ImageManipulator.ActionResize | null {
+  if (!width || !height || Math.max(width, height) <= maxUploadDimension) {
+    return null;
+  }
+
+  if (width >= height) {
+    return { resize: { width: maxUploadDimension } };
+  }
+
+  return { resize: { height: maxUploadDimension } };
 }

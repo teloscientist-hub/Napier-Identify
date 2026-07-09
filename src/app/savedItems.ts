@@ -17,6 +17,6 @@ export function createSavedItemFromSelection(
     tags: [candidate.confidenceBand.replaceAll("_", " ")],
     condition: "",
     provenance: "",
-    privatePhotos: queryImage?.localUri ? [queryImage.localUri] : [],
+    privatePhotos: queryImage?.originalUri ? [queryImage.originalUri] : [],
   };
 }
