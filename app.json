@@ -1,0 +1,22 @@
+{
+  "expo": {
+    "name": "Napier Visual Reference",
+    "slug": "napier-visual-reference",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.lifebydesignpublishing.napierreference",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Napier Visual Reference uses the camera so you can photograph jewelry for identification.",
+        "NSPhotoLibraryUsageDescription": "Napier Visual Reference uses your photo library so you can import jewelry photos for identification."
+      }
+    },
+    "android": {
+      "package": "com.lifebydesignpublishing.napierreference",
+      "permissions": ["CAMERA", "READ_MEDIA_IMAGES", "READ_EXTERNAL_STORAGE"]
+    }
+  }
+}
