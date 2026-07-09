@@ -2,18 +2,22 @@ import React from "react";
 import { Text, View } from "react-native";
 import { PrimaryButton, QueryImagePreview, SecondaryButton } from "../components/ui";
 import { styles } from "../styles/styles";
-import { LocalQueryImage } from "../types";
+import { LocalQueryImage, PieceDraft } from "../types";
 
 export function CaptureReviewScreen({
   image,
   onUsePhoto,
-  onQueuePhoto,
+  pieceDrafts,
+  onAddAsNewPiece,
+  onAddToPieceDraft,
   onRetake,
   onCrop,
 }: {
   image: LocalQueryImage | null;
   onUsePhoto: () => void;
-  onQueuePhoto: () => void;
+  pieceDrafts: PieceDraft[];
+  onAddAsNewPiece: () => void;
+  onAddToPieceDraft: (draftId: string) => void;
   onRetake: () => void;
   onCrop: () => void;
 }) {
@@ -35,7 +39,19 @@ export function CaptureReviewScreen({
         </View>
       ) : null}
       <PrimaryButton label="Use Photo" onPress={onUsePhoto} />
-      <SecondaryButton label="Add To Queue" onPress={onQueuePhoto} />
+      <SecondaryButton label="Add As New Piece Draft" onPress={onAddAsNewPiece} />
+      {pieceDrafts.length > 0 ? (
+        <View style={styles.infoBlock}>
+          <Text style={styles.infoTitle}>Add to existing piece</Text>
+          {pieceDrafts.map((draft) => (
+            <SecondaryButton
+              key={draft.draftId}
+              label={`${draft.title} (${draft.captures.length} photo${draft.captures.length === 1 ? "" : "s"})`}
+              onPress={() => onAddToPieceDraft(draft.draftId)}
+            />
+          ))}
+        </View>
+      ) : null}
       <SecondaryButton label="Crop / Isolate Object" onPress={onCrop} />
       <SecondaryButton label="Retake" onPress={onRetake} />
     </View>

@@ -2,20 +2,22 @@ import React from "react";
 import { Text, View } from "react-native";
 import { DangerButton, PrimaryButton, QueryImagePreview, SecondaryButton } from "../components/ui";
 import { styles } from "../styles/styles";
-import { QueuedCapture } from "../types";
+import { PieceDraft } from "../types";
 
 export function QueueScreen({
-  captures,
+  drafts,
   onOpenIdentify,
-  onProcessCapture,
+  onProcessDraft,
+  onDeleteDraft,
   onDeleteCapture,
 }: {
-  captures: QueuedCapture[];
+  drafts: PieceDraft[];
   onOpenIdentify: () => void;
-  onProcessCapture: (capture: QueuedCapture) => void;
-  onDeleteCapture: (captureId: string) => void;
+  onProcessDraft: (draft: PieceDraft) => void;
+  onDeleteDraft: (draftId: string) => void;
+  onDeleteCapture: (draftId: string, captureId: string) => void;
 }) {
-  if (captures.length === 0) {
+  if (drafts.length === 0) {
     return (
       <View style={styles.stack}>
         <Text style={styles.sectionTitle}>Capture queue is empty</Text>
@@ -27,25 +29,37 @@ export function QueueScreen({
 
   return (
     <View style={styles.stack}>
-      <Text style={styles.sectionTitle}>{captures.length} queued capture{captures.length === 1 ? "" : "s"}</Text>
-      {captures.map((capture) => (
-        <View key={capture.captureId} style={styles.card}>
-          <QueryImagePreview label="Queued photo" uri={capture.image.originalUri} />
-          <View style={styles.cardHeader}>
-            <Text style={styles.cardTitle}>{capture.label}</Text>
-            <Text style={styles.statusPill}>{capture.status}</Text>
+      <Text style={styles.sectionTitle}>{drafts.length} piece draft{drafts.length === 1 ? "" : "s"}</Text>
+      {drafts.map((draft) => {
+        const primaryCapture = draft.captures.find((capture) => capture.captureId === draft.primaryCaptureId) ?? draft.captures[0];
+
+        return (
+          <View key={draft.draftId} style={styles.card}>
+            <QueryImagePreview label="Primary photo" uri={primaryCapture?.image.originalUri ?? null} />
+            <View style={styles.cardHeader}>
+              <Text style={styles.cardTitle}>{draft.title}</Text>
+              <Text style={styles.statusPill}>{draft.status}</Text>
+            </View>
+            <Text style={styles.meta}>
+              {draft.captures.length} photo{draft.captures.length === 1 ? "" : "s"} attached
+            </Text>
+            <Text style={styles.meta}>Updated {new Date(draft.updatedAt).toLocaleString()}</Text>
+            <SecondaryButton
+              label={draft.status === "saved" ? "Review Again" : "Identify This Piece"}
+              onPress={() => onProcessDraft(draft)}
+            />
+            {draft.captures.map((capture, index) => (
+              <View key={capture.captureId} style={styles.photoRow}>
+                <Text style={styles.meta}>
+                  Photo {index + 1}: {capture.angleLabel}
+                </Text>
+                <DangerButton label="Delete Photo" onPress={() => onDeleteCapture(draft.draftId, capture.captureId)} />
+              </View>
+            ))}
+            <DangerButton label="Delete Piece Draft" onPress={() => onDeleteDraft(draft.draftId)} />
           </View>
-          <Text style={styles.meta}>Captured {new Date(capture.createdAt).toLocaleString()}</Text>
-          <Text style={styles.meta}>
-            Upload image: {capture.image.width} x {capture.image.height} px
-          </Text>
-          <SecondaryButton
-            label={capture.status === "saved" ? "Review Again" : "Identify This Capture"}
-            onPress={() => onProcessCapture(capture)}
-          />
-          <DangerButton label="Delete From Queue" onPress={() => onDeleteCapture(capture.captureId)} />
-        </View>
-      ))}
+        );
+      })}
     </View>
   );
 }

@@ -5,6 +5,7 @@ export function createSavedItemFromSelection(
   candidate: CandidateResult,
   item: ItemDetail | null,
   queryImage: LocalQueryImage | null,
+  privatePhotoUris?: string[],
 ): SavedItem {
   return {
     savedItemId: `saved_${Date.now()}`,
@@ -17,6 +18,6 @@ export function createSavedItemFromSelection(
     tags: [candidate.confidenceBand.replaceAll("_", " ")],
     condition: "",
     provenance: "",
-    privatePhotos: queryImage?.originalUri ? [queryImage.originalUri] : [],
+    privatePhotos: privatePhotoUris ?? (queryImage?.originalUri ? [queryImage.originalUri] : []),
   };
 }

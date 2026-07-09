@@ -30,8 +30,8 @@ import {
   IdentifyResponse,
   ItemDetail,
   LocalQueryImage,
+  PieceDraft,
   PrivacySettings,
-  QueuedCapture,
   SavedItem,
   SearchHint,
   SearchQuery,
@@ -44,8 +44,8 @@ export function AppShell() {
   const [hints, setHints] = useState<SearchHint>(defaultHints);
   const [selectedCandidate, setSelectedCandidate] = useState<CandidateResult>(mockCandidates[0]);
   const [savedItems, setSavedItems] = useState<SavedItem[]>([]);
-  const [queuedCaptures, setQueuedCaptures] = useState<QueuedCapture[]>([]);
-  const [activeQueuedCaptureId, setActiveQueuedCaptureId] = useState<string | null>(null);
+  const [pieceDrafts, setPieceDrafts] = useState<PieceDraft[]>([]);
+  const [activePieceDraftId, setActivePieceDraftId] = useState<string | null>(null);
   const [lastSavedTitle, setLastSavedTitle] = useState<string | null>(null);
   const [history, setHistory] = useState<HistoryEntry[]>(initialHistory);
   const [privacy, setPrivacy] = useState<PrivacySettings>(defaultPrivacySettings);
@@ -71,7 +71,7 @@ export function AppShell() {
     setApiError(null);
     setMediaError(null);
     setQueryImage(null);
-    setActiveQueuedCaptureId(null);
+    setActivePieceDraftId(null);
     setScreen("identify");
   }
 
@@ -80,15 +80,12 @@ export function AppShell() {
     setMediaError(null);
 
     const result = await takeQueryPhoto();
-    if (result.status === "denied") {
-      setMediaError(result.message);
-    }
-    if (result.status === "canceled") {
+    if (result.status === "denied" || result.status === "canceled") {
       setMediaError(result.message);
     }
     if (result.status === "selected") {
       setQueryImage(result.image);
-      setActiveQueuedCaptureId(null);
+      setActivePieceDraftId(null);
       setScreen("captureReview");
     }
   }
@@ -98,60 +95,126 @@ export function AppShell() {
     setMediaError(null);
 
     const result = await importQueryPhoto();
-    if (result.status === "denied") {
-      setMediaError(result.message);
-    }
-    if (result.status === "canceled") {
+    if (result.status === "denied" || result.status === "canceled") {
       setMediaError(result.message);
     }
     if (result.status === "selected") {
       setQueryImage(result.image);
-      setActiveQueuedCaptureId(null);
+      setActivePieceDraftId(null);
       setScreen("captureReview");
     }
   }
 
-  function addCurrentPhotoToQueue() {
+  function createQueuedCapture(image: LocalQueryImage, angleLabel = "unlabeled view") {
+    return {
+      captureId: `capture_${Date.now()}`,
+      image,
+      createdAt: new Date().toISOString(),
+      angleLabel,
+    };
+  }
+
+  function addCurrentPhotoAsNewPiece() {
     if (!queryImage) {
       setMediaError("Take or import a photo before adding it to the queue.");
       return;
     }
 
-    const queuedCapture: QueuedCapture = {
-      captureId: `capture_${Date.now()}`,
-      image: queryImage,
-      createdAt: new Date().toISOString(),
+    const capture = createQueuedCapture(queryImage, "primary view");
+    const draftNumber = pieceDrafts.length + 1;
+    const now = new Date().toISOString();
+    const draft: PieceDraft = {
+      draftId: `draft_${Date.now()}`,
+      title: `Piece Draft ${draftNumber}`,
+      createdAt: now,
+      updatedAt: now,
       status: "queued",
-      label: `${queryImage.source === "camera" ? "Camera" : "Imported"} capture`,
+      captures: [capture],
+      primaryCaptureId: capture.captureId,
       searchQueryId: null,
       savedItemId: null,
     };
 
-    setQueuedCaptures((captures) => [queuedCapture, ...captures]);
+    setPieceDrafts((drafts) => [draft, ...drafts]);
     setQueryImage(null);
-    setActiveQueuedCaptureId(null);
+    setActivePieceDraftId(null);
     setTab("queue");
     setScreen("identify");
   }
 
-  function processQueuedCapture(capture: QueuedCapture) {
+  function addCurrentPhotoToPieceDraft(draftId: string) {
+    if (!queryImage) {
+      setMediaError("Take or import a photo before adding it to a piece draft.");
+      return;
+    }
+
+    const capture = createQueuedCapture(queryImage, "additional view");
+    setPieceDrafts((drafts) =>
+      drafts.map((draft) =>
+        draft.draftId === draftId
+          ? {
+              ...draft,
+              captures: [...draft.captures, capture],
+              updatedAt: new Date().toISOString(),
+              status: draft.status === "saved" ? "saved" : "queued",
+            }
+          : draft,
+      ),
+    );
+    setQueryImage(null);
+    setActivePieceDraftId(null);
+    setTab("queue");
+    setScreen("identify");
+  }
+
+  function processPieceDraft(draft: PieceDraft) {
+    const primaryCapture = draft.captures.find((capture) => capture.captureId === draft.primaryCaptureId) ?? draft.captures[0];
+    if (!primaryCapture) {
+      setMediaError("This piece draft has no photos left to identify.");
+      return;
+    }
+
     setApiError(null);
     setMediaError(null);
-    setQueryImage(capture.image);
-    setActiveQueuedCaptureId(capture.captureId);
+    setQueryImage(primaryCapture.image);
+    setActivePieceDraftId(draft.draftId);
     setTab("identify");
     setScreen("captureReview");
   }
 
-  function deleteQueuedCapture(captureId: string) {
-    setQueuedCaptures((captures) => captures.filter((capture) => capture.captureId !== captureId));
-    if (activeQueuedCaptureId === captureId) {
-      setActiveQueuedCaptureId(null);
+  function deletePieceDraft(draftId: string) {
+    setPieceDrafts((drafts) => drafts.filter((draft) => draft.draftId !== draftId));
+    if (activePieceDraftId === draftId) {
+      setActivePieceDraftId(null);
       setQueryImage(null);
       setApiError(null);
       setMediaError(null);
       setScreen("identify");
     }
+  }
+
+  function deletePieceDraftCapture(draftId: string, captureId: string) {
+    setPieceDrafts((drafts) =>
+      drafts.flatMap((draft) => {
+        if (draft.draftId !== draftId) {
+          return [draft];
+        }
+
+        const captures = draft.captures.filter((capture) => capture.captureId !== captureId);
+        if (captures.length === 0) {
+          return [];
+        }
+
+        return [
+          {
+            ...draft,
+            captures,
+            primaryCaptureId: draft.primaryCaptureId === captureId ? captures[0].captureId : draft.primaryCaptureId,
+            updatedAt: new Date().toISOString(),
+          },
+        ];
+      }),
+    );
   }
 
   function confirmMockCrop() {
@@ -184,12 +247,12 @@ export function AppShell() {
     try {
       const response = await identify(query, apiMode, { forceNoMatch: noMatch });
       setIdentifyResponse(response);
-      if (activeQueuedCaptureId) {
-        setQueuedCaptures((captures) =>
-          captures.map((capture) =>
-            capture.captureId === activeQueuedCaptureId
-              ? { ...capture, status: response.candidates[0] ? "searched" : "unresolved", searchQueryId: query.queryId }
-              : capture,
+      if (activePieceDraftId) {
+        setPieceDrafts((drafts) =>
+          drafts.map((draft) =>
+            draft.draftId === activePieceDraftId
+              ? { ...draft, status: response.candidates[0] ? "searched" : "unresolved", searchQueryId: query.queryId }
+              : draft,
           ),
         );
       }
@@ -214,19 +277,22 @@ export function AppShell() {
   }
 
   function saveCurrentItem() {
-    const saved = createSavedItemFromSelection(currentQuery.queryId, selectedCandidate, selectedItemDetail, queryImage);
+    const activeDraft = pieceDrafts.find((draft) => draft.draftId === activePieceDraftId) ?? null;
+    const privatePhotoUris = activeDraft?.captures.map((capture) => capture.image.originalUri);
+    const saved = createSavedItemFromSelection(currentQuery.queryId, selectedCandidate, selectedItemDetail, queryImage, privatePhotoUris);
+
     setSavedItems((items) => [saved, ...items]);
     setHistory((entries) =>
       entries.map((entry) =>
         entry.queryId === currentQuery.queryId ? { ...entry, savedItemId: saved.savedItemId } : entry,
       ),
     );
-    if (activeQueuedCaptureId) {
-      setQueuedCaptures((captures) =>
-        captures.map((capture) =>
-          capture.captureId === activeQueuedCaptureId
-            ? { ...capture, status: "saved", searchQueryId: currentQuery.queryId, savedItemId: saved.savedItemId }
-            : capture,
+    if (activePieceDraftId) {
+      setPieceDrafts((drafts) =>
+        drafts.map((draft) =>
+          draft.draftId === activePieceDraftId
+            ? { ...draft, status: "saved", searchQueryId: currentQuery.queryId, savedItemId: saved.savedItemId }
+            : draft,
         ),
       );
     }
@@ -251,13 +317,14 @@ export function AppShell() {
     if (tab === "queue") {
       return (
         <QueueScreen
-          captures={queuedCaptures}
+          drafts={pieceDrafts}
           onOpenIdentify={() => {
             setTab("identify");
             setScreen("identify");
           }}
-          onProcessCapture={processQueuedCapture}
-          onDeleteCapture={deleteQueuedCapture}
+          onProcessDraft={processPieceDraft}
+          onDeleteDraft={deletePieceDraft}
+          onDeleteCapture={deletePieceDraftCapture}
         />
       );
     }
@@ -280,8 +347,10 @@ export function AppShell() {
       return (
         <CaptureReviewScreen
           image={queryImage}
+          pieceDrafts={pieceDrafts}
           onUsePhoto={() => setScreen("hints")}
-          onQueuePhoto={addCurrentPhotoToQueue}
+          onAddAsNewPiece={addCurrentPhotoAsNewPiece}
+          onAddToPieceDraft={addCurrentPhotoToPieceDraft}
           onRetake={resetPhotoSelection}
           onCrop={() => setScreen("crop")}
         />
@@ -333,9 +402,9 @@ export function AppShell() {
     itemDetailLoading,
     lastSavedTitle,
     mediaError,
+    pieceDrafts,
     privacy,
     queryImage,
-    queuedCaptures,
     savedItems,
     screen,
     selectedCandidate,

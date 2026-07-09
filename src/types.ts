@@ -62,14 +62,23 @@ export type LocalQueryImage = {
   } | null;
 };
 
-export type QueuedCaptureStatus = "queued" | "searched" | "saved" | "unresolved";
+export type PieceDraftStatus = "queued" | "searched" | "saved" | "unresolved";
 
 export type QueuedCapture = {
   captureId: string;
   image: LocalQueryImage;
   createdAt: string;
-  status: QueuedCaptureStatus;
-  label: string;
+  angleLabel: string;
+};
+
+export type PieceDraft = {
+  draftId: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+  status: PieceDraftStatus;
+  captures: QueuedCapture[];
+  primaryCaptureId: string;
   searchQueryId: string | null;
   savedItemId: string | null;
 };

@@ -264,6 +264,12 @@ export const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
+  photoRow: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: "#d8d1c4",
+    paddingTop: 10,
+    gap: 8,
+  },
   rank: {
     color: "#6f604a",
     fontSize: 13,
