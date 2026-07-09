@@ -1,5 +1,6 @@
 import React from "react";
 import { Text, View } from "react-native";
+import { appVersion } from "../app/version";
 import { AppMode } from "../services/appServices";
 import { styles } from "../styles/styles";
 import { PrivacySettings } from "../types";
@@ -18,6 +19,13 @@ export function SettingsScreen({
 }) {
   return (
     <View style={styles.stack}>
+      <View style={styles.versionBox}>
+        <Text style={styles.versionTitle}>App version {appVersion.version}</Text>
+        <Text style={styles.meta}>Build {appVersion.buildLabel}</Text>
+        <Text style={styles.meta}>
+          {appVersion.releaseTrack} - {appVersion.releaseDate}
+        </Text>
+      </View>
       <Text style={styles.sectionTitle}>Prototype mode</Text>
       <Text style={styles.copy}>Use real mode only when EXPO_PUBLIC_NAPIER_API_BASE_URL points to a test backend.</Text>
       <ChipRow

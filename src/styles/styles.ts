@@ -92,6 +92,19 @@ export const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "800",
   },
+  versionBox: {
+    backgroundColor: "#ffffff",
+    borderColor: "#d8d1c4",
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 8,
+    padding: 14,
+    gap: 4,
+  },
+  versionTitle: {
+    color: "#1f1c18",
+    fontSize: 16,
+    fontWeight: "800",
+  },
   primaryButton: {
     backgroundColor: "#2f5d50",
     borderRadius: 8,
