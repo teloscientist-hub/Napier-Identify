@@ -6,7 +6,7 @@ export type ConfidenceBand =
   | "needs_review"
   | "no_confident_match";
 
-export type AppTab = "identify" | "collection" | "history" | "settings";
+export type AppTab = "identify" | "queue" | "collection" | "history" | "settings";
 
 export type FlowScreen =
   | "identify"
@@ -60,6 +60,18 @@ export type LocalQueryImage = {
     width: number;
     height: number;
   } | null;
+};
+
+export type QueuedCaptureStatus = "queued" | "searched" | "saved" | "unresolved";
+
+export type QueuedCapture = {
+  captureId: string;
+  image: LocalQueryImage;
+  createdAt: string;
+  status: QueuedCaptureStatus;
+  label: string;
+  searchQueryId: string | null;
+  savedItemId: string | null;
 };
 
 export type CandidateResult = {

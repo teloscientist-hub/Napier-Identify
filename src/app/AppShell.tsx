@@ -15,6 +15,7 @@ import { HintsScreen } from "../screens/HintsScreen";
 import { HistoryScreen } from "../screens/HistoryScreen";
 import { IdentifyScreen } from "../screens/IdentifyScreen";
 import { ItemDetailScreen } from "../screens/ItemDetailScreen";
+import { QueueScreen } from "../screens/QueueScreen";
 import { ResultsScreen } from "../screens/ResultsScreen";
 import { SearchProgressScreen } from "../screens/SearchProgressScreen";
 import { SettingsScreen } from "../screens/SettingsScreen";
@@ -30,6 +31,7 @@ import {
   ItemDetail,
   LocalQueryImage,
   PrivacySettings,
+  QueuedCapture,
   SavedItem,
   SearchHint,
   SearchQuery,
@@ -42,6 +44,8 @@ export function AppShell() {
   const [hints, setHints] = useState<SearchHint>(defaultHints);
   const [selectedCandidate, setSelectedCandidate] = useState<CandidateResult>(mockCandidates[0]);
   const [savedItems, setSavedItems] = useState<SavedItem[]>([]);
+  const [queuedCaptures, setQueuedCaptures] = useState<QueuedCapture[]>([]);
+  const [activeQueuedCaptureId, setActiveQueuedCaptureId] = useState<string | null>(null);
   const [lastSavedTitle, setLastSavedTitle] = useState<string | null>(null);
   const [history, setHistory] = useState<HistoryEntry[]>(initialHistory);
   const [privacy, setPrivacy] = useState<PrivacySettings>(defaultPrivacySettings);
@@ -67,6 +71,7 @@ export function AppShell() {
     setApiError(null);
     setMediaError(null);
     setQueryImage(null);
+    setActiveQueuedCaptureId(null);
     setScreen("identify");
   }
 
@@ -83,6 +88,7 @@ export function AppShell() {
     }
     if (result.status === "selected") {
       setQueryImage(result.image);
+      setActiveQueuedCaptureId(null);
       setScreen("captureReview");
     }
   }
@@ -100,8 +106,41 @@ export function AppShell() {
     }
     if (result.status === "selected") {
       setQueryImage(result.image);
+      setActiveQueuedCaptureId(null);
       setScreen("captureReview");
     }
+  }
+
+  function addCurrentPhotoToQueue() {
+    if (!queryImage) {
+      setMediaError("Take or import a photo before adding it to the queue.");
+      return;
+    }
+
+    const queuedCapture: QueuedCapture = {
+      captureId: `capture_${Date.now()}`,
+      image: queryImage,
+      createdAt: new Date().toISOString(),
+      status: "queued",
+      label: `${queryImage.source === "camera" ? "Camera" : "Imported"} capture`,
+      searchQueryId: null,
+      savedItemId: null,
+    };
+
+    setQueuedCaptures((captures) => [queuedCapture, ...captures]);
+    setQueryImage(null);
+    setActiveQueuedCaptureId(null);
+    setTab("queue");
+    setScreen("identify");
+  }
+
+  function processQueuedCapture(capture: QueuedCapture) {
+    setApiError(null);
+    setMediaError(null);
+    setQueryImage(capture.image);
+    setActiveQueuedCaptureId(capture.captureId);
+    setTab("identify");
+    setScreen("captureReview");
   }
 
   function confirmMockCrop() {
@@ -134,6 +173,15 @@ export function AppShell() {
     try {
       const response = await identify(query, apiMode, { forceNoMatch: noMatch });
       setIdentifyResponse(response);
+      if (activeQueuedCaptureId) {
+        setQueuedCaptures((captures) =>
+          captures.map((capture) =>
+            capture.captureId === activeQueuedCaptureId
+              ? { ...capture, status: response.candidates[0] ? "searched" : "unresolved", searchQueryId: query.queryId }
+              : capture,
+          ),
+        );
+      }
       if (response.candidates[0]) {
         setHistory((entries) => [
           {
@@ -162,6 +210,15 @@ export function AppShell() {
         entry.queryId === currentQuery.queryId ? { ...entry, savedItemId: saved.savedItemId } : entry,
       ),
     );
+    if (activeQueuedCaptureId) {
+      setQueuedCaptures((captures) =>
+        captures.map((capture) =>
+          capture.captureId === activeQueuedCaptureId
+            ? { ...capture, status: "saved", searchQueryId: currentQuery.queryId, savedItemId: saved.savedItemId }
+            : capture,
+        ),
+      );
+    }
     setLastSavedTitle(saved.title);
     setTab("collection");
   }
@@ -177,6 +234,18 @@ export function AppShell() {
             setTab("identify");
             setScreen("identify");
           }}
+        />
+      );
+    }
+    if (tab === "queue") {
+      return (
+        <QueueScreen
+          captures={queuedCaptures}
+          onOpenIdentify={() => {
+            setTab("identify");
+            setScreen("identify");
+          }}
+          onProcessCapture={processQueuedCapture}
         />
       );
     }
@@ -200,6 +269,7 @@ export function AppShell() {
         <CaptureReviewScreen
           image={queryImage}
           onUsePhoto={() => setScreen("hints")}
+          onQueuePhoto={addCurrentPhotoToQueue}
           onRetake={resetPhotoSelection}
           onCrop={() => setScreen("crop")}
         />
@@ -253,6 +323,7 @@ export function AppShell() {
     mediaError,
     privacy,
     queryImage,
+    queuedCaptures,
     savedItems,
     screen,
     selectedCandidate,

@@ -265,6 +265,12 @@ export const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
   },
+  statusPill: {
+    color: "#2f5d50",
+    fontSize: 12,
+    fontWeight: "800",
+    textTransform: "uppercase",
+  },
   badge: {
     alignSelf: "flex-start",
     borderRadius: 999,
@@ -331,9 +337,9 @@ export const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: "#d8d1c4",
     backgroundColor: "#fbfaf7",
-    paddingHorizontal: 10,
+    paddingHorizontal: 6,
     paddingTop: 10,
-    gap: 6,
+    gap: 4,
   },
   tabButton: {
     flex: 1,
@@ -348,7 +354,7 @@ export const styles = StyleSheet.create({
   },
   tabText: {
     color: "#6f604a",
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: "800",
   },
   tabTextActive: {

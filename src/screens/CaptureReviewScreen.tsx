@@ -7,11 +7,13 @@ import { LocalQueryImage } from "../types";
 export function CaptureReviewScreen({
   image,
   onUsePhoto,
+  onQueuePhoto,
   onRetake,
   onCrop,
 }: {
   image: LocalQueryImage | null;
   onUsePhoto: () => void;
+  onQueuePhoto: () => void;
   onRetake: () => void;
   onCrop: () => void;
 }) {
@@ -33,6 +35,7 @@ export function CaptureReviewScreen({
         </View>
       ) : null}
       <PrimaryButton label="Use Photo" onPress={onUsePhoto} />
+      <SecondaryButton label="Add To Queue" onPress={onQueuePhoto} />
       <SecondaryButton label="Crop / Isolate Object" onPress={onCrop} />
       <SecondaryButton label="Retake" onPress={onRetake} />
     </View>
