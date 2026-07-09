@@ -143,6 +143,17 @@ export function AppShell() {
     setScreen("captureReview");
   }
 
+  function deleteQueuedCapture(captureId: string) {
+    setQueuedCaptures((captures) => captures.filter((capture) => capture.captureId !== captureId));
+    if (activeQueuedCaptureId === captureId) {
+      setActiveQueuedCaptureId(null);
+      setQueryImage(null);
+      setApiError(null);
+      setMediaError(null);
+      setScreen("identify");
+    }
+  }
+
   function confirmMockCrop() {
     setQueryImage((image) => (image ? { ...image, crop: createMockCrop(image) } : image));
     setScreen("hints");
@@ -246,6 +257,7 @@ export function AppShell() {
             setScreen("identify");
           }}
           onProcessCapture={processQueuedCapture}
+          onDeleteCapture={deleteQueuedCapture}
         />
       );
     }

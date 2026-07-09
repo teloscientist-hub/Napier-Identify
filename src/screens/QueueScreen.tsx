@@ -1,6 +1,6 @@
 import React from "react";
 import { Text, View } from "react-native";
-import { PrimaryButton, QueryImagePreview, SecondaryButton } from "../components/ui";
+import { DangerButton, PrimaryButton, QueryImagePreview, SecondaryButton } from "../components/ui";
 import { styles } from "../styles/styles";
 import { QueuedCapture } from "../types";
 
@@ -8,10 +8,12 @@ export function QueueScreen({
   captures,
   onOpenIdentify,
   onProcessCapture,
+  onDeleteCapture,
 }: {
   captures: QueuedCapture[];
   onOpenIdentify: () => void;
   onProcessCapture: (capture: QueuedCapture) => void;
+  onDeleteCapture: (captureId: string) => void;
 }) {
   if (captures.length === 0) {
     return (
@@ -41,6 +43,7 @@ export function QueueScreen({
             label={capture.status === "saved" ? "Review Again" : "Identify This Capture"}
             onPress={() => onProcessCapture(capture)}
           />
+          <DangerButton label="Delete From Queue" onPress={() => onDeleteCapture(capture.captureId)} />
         </View>
       ))}
     </View>

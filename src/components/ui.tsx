@@ -108,3 +108,11 @@ export function SecondaryButton({ label, onPress }: { label: string; onPress: ()
     </TouchableOpacity>
   );
 }
+
+export function DangerButton({ label, onPress }: { label: string; onPress: () => void }) {
+  return (
+    <TouchableOpacity style={styles.dangerButton} onPress={onPress}>
+      <Text style={styles.dangerButtonText}>{label}</Text>
+    </TouchableOpacity>
+  );
+}

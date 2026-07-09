@@ -131,6 +131,20 @@ export const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "800",
   },
+  dangerButton: {
+    backgroundColor: "#fff7f4",
+    borderColor: "#c87a65",
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 8,
+    paddingVertical: 13,
+    paddingHorizontal: 16,
+    alignItems: "center",
+  },
+  dangerButtonText: {
+    color: "#9b3f2d",
+    fontSize: 15,
+    fontWeight: "800",
+  },
   mockImage: {
     height: 220,
     borderRadius: 8,
