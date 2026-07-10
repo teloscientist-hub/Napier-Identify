@@ -274,6 +274,10 @@ export const styles = StyleSheet.create({
     paddingTop: 10,
     gap: 8,
   },
+  carouselControls: {
+    flexDirection: "row",
+    gap: 8,
+  },
   photoGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
