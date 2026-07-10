@@ -43,6 +43,7 @@ export function QueueScreen({
       <PrimaryButton label="Capture New Piece" onPress={onOpenIdentify} />
       {drafts.map((draft) => {
         const primaryCapture = draft.captures.find((capture) => capture.captureId === draft.primaryCaptureId) ?? draft.captures[0];
+        const saveLabel = draft.captures.length > 1 ? "Save This Piece With Multiple Photos" : "Save This Piece";
 
         return (
           <View key={draft.draftId} style={styles.card}>
@@ -100,12 +101,12 @@ export function QueueScreen({
                 </View>
               ) : null,
             )}
-            <PrimaryButton label="Save This Piece With Multiple Photos" onPress={() => onSaveDraft(draft)} />
+            <PrimaryButton label={saveLabel} onPress={() => onSaveDraft(draft)} />
             <SecondaryButton
               label={draft.status === "saved" ? "Review Again" : "Identify This Piece"}
               onPress={() => onProcessDraft(draft)}
             />
-            <SecondaryButton label="Add Photo To This Piece" onPress={() => onAddPhotoToDraft(draft)} />
+            <SecondaryButton label="Add More Photos To This Piece" onPress={() => onAddPhotoToDraft(draft)} />
             {draft.captures.map((capture, index) => (
               <View key={capture.captureId} style={styles.photoRow}>
                 <Text style={styles.meta}>
