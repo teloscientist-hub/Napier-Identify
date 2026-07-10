@@ -69,6 +69,7 @@ export type QueuedCapture = {
   image: LocalQueryImage;
   createdAt: string;
   angleLabel: string;
+  notes: string;
 };
 
 export type PieceDraft = {

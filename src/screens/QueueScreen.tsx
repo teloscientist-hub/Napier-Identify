@@ -1,5 +1,5 @@
-import React from "react";
-import { Image, Text, TextInput, View } from "react-native";
+import React, { useState } from "react";
+import { Image, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { DangerButton, PrimaryButton, QueryImagePreview, SecondaryButton } from "../components/ui";
 import { styles } from "../styles/styles";
 import { PieceDraft } from "../types";
@@ -9,6 +9,8 @@ export function QueueScreen({
   onOpenIdentify,
   onAddPhotoToDraft,
   onUpdateDraft,
+  onUpdateCaptureNotes,
+  onSaveDraft,
   onProcessDraft,
   onDeleteDraft,
   onDeleteCapture,
@@ -17,10 +19,14 @@ export function QueueScreen({
   onOpenIdentify: () => void;
   onAddPhotoToDraft: (draft: PieceDraft) => void;
   onUpdateDraft: (draftId: string, updates: Pick<PieceDraft, "title" | "description">) => void;
+  onUpdateCaptureNotes: (draftId: string, captureId: string, notes: string) => void;
+  onSaveDraft: (draft: PieceDraft) => void;
   onProcessDraft: (draft: PieceDraft) => void;
   onDeleteDraft: (draftId: string) => void;
   onDeleteCapture: (draftId: string, captureId: string) => void;
 }) {
+  const [selectedCaptureId, setSelectedCaptureId] = useState<string | null>(null);
+
   if (drafts.length === 0) {
     return (
       <View style={styles.stack}>
@@ -70,12 +76,31 @@ export function QueueScreen({
             <Text style={styles.meta}>Updated {new Date(draft.updatedAt).toLocaleString()}</Text>
             <View style={styles.photoGrid}>
               {draft.captures.map((capture, index) => (
-                <View key={capture.captureId} style={styles.photoThumb}>
+                <TouchableOpacity
+                  key={capture.captureId}
+                  style={[styles.photoThumb, selectedCaptureId === capture.captureId && styles.photoThumbActive]}
+                  onPress={() => setSelectedCaptureId(capture.captureId)}
+                >
                   <Image source={{ uri: capture.image.originalUri }} style={styles.photoThumbImage} resizeMode="cover" />
                   <Text style={styles.photoThumbLabel}>Photo {index + 1}</Text>
-                </View>
+                </TouchableOpacity>
               ))}
             </View>
+            {draft.captures.map((capture, index) =>
+              selectedCaptureId === capture.captureId ? (
+                <View key={`${capture.captureId}_notes`} style={styles.infoBlock}>
+                  <Text style={styles.infoTitle}>Photo {index + 1} notes</Text>
+                  <TextInput
+                    multiline
+                    style={[styles.input, styles.multilineInput]}
+                    value={capture.notes}
+                    onChangeText={(notes) => onUpdateCaptureNotes(draft.draftId, capture.captureId, notes)}
+                    placeholder="Example: back view, clasp, Napier mark, stone detail."
+                  />
+                </View>
+              ) : null,
+            )}
+            <PrimaryButton label="Save This Piece With Multiple Photos" onPress={() => onSaveDraft(draft)} />
             <SecondaryButton
               label={draft.status === "saved" ? "Review Again" : "Identify This Piece"}
               onPress={() => onProcessDraft(draft)}

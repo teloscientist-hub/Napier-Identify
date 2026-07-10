@@ -36,7 +36,7 @@ import {
   SearchHint,
   SearchQuery,
 } from "../types";
-import { createSavedItemFromSelection } from "./savedItems";
+import { createSavedItemFromPieceDraft, createSavedItemFromSelection } from "./savedItems";
 
 export function AppShell() {
   const [tab, setTab] = useState<AppTab>("identify");
@@ -113,6 +113,7 @@ export function AppShell() {
       image,
       createdAt: new Date().toISOString(),
       angleLabel,
+      notes: "",
     };
   }
 
@@ -204,6 +205,34 @@ export function AppShell() {
           : draft,
       ),
     );
+  }
+
+  function updatePieceDraftCaptureNotes(draftId: string, captureId: string, notes: string) {
+    setPieceDrafts((drafts) =>
+      drafts.map((draft) =>
+        draft.draftId === draftId
+          ? {
+              ...draft,
+              captures: draft.captures.map((capture) =>
+                capture.captureId === captureId ? { ...capture, notes } : capture,
+              ),
+              updatedAt: new Date().toISOString(),
+            }
+          : draft,
+      ),
+    );
+  }
+
+  function savePieceDraftToCollection(draft: PieceDraft) {
+    const saved = createSavedItemFromPieceDraft(draft);
+    setSavedItems((items) => [saved, ...items]);
+    setPieceDrafts((drafts) =>
+      drafts.map((item) =>
+        item.draftId === draft.draftId ? { ...item, status: "saved", savedItemId: saved.savedItemId } : item,
+      ),
+    );
+    setLastSavedTitle(saved.title);
+    setTab("collection");
   }
 
   function processPieceDraft(draft: PieceDraft) {
@@ -364,6 +393,8 @@ export function AppShell() {
           }}
           onAddPhotoToDraft={startAddingPhotoToDraft}
           onUpdateDraft={updatePieceDraft}
+          onUpdateCaptureNotes={updatePieceDraftCaptureNotes}
+          onSaveDraft={savePieceDraftToCollection}
           onProcessDraft={processPieceDraft}
           onDeleteDraft={deletePieceDraft}
           onDeleteCapture={deletePieceDraftCapture}

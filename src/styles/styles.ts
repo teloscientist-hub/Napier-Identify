@@ -282,6 +282,11 @@ export const styles = StyleSheet.create({
   photoThumb: {
     width: 92,
     gap: 4,
+    borderRadius: 8,
+    padding: 2,
+  },
+  photoThumbActive: {
+    backgroundColor: "#e5f0eb",
   },
   photoThumbImage: {
     width: 92,
