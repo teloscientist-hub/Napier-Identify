@@ -368,17 +368,56 @@ export function AppShell() {
     setTab("collection");
   }
 
+  function updateSavedCollectionItem(savedItemId: string, updates: Pick<SavedItem, "title" | "notes">) {
+    setSavedItems((items) =>
+      items.map((item) =>
+        item.savedItemId === savedItemId
+          ? {
+              ...item,
+              title: updates.title,
+              notes: updates.notes,
+            }
+          : item,
+      ),
+    );
+  }
+
+  async function addPhotoToSavedCollectionItem(savedItemId: string, source: "camera" | "gallery") {
+    setApiError(null);
+    setMediaError(null);
+
+    const result = source === "camera" ? await takeQueryPhoto() : await importQueryPhoto();
+    if (result.status === "denied" || result.status === "canceled") {
+      setMediaError(result.message);
+      return;
+    }
+
+    setSavedItems((items) =>
+      items.map((item) =>
+        item.savedItemId === savedItemId
+          ? {
+              ...item,
+              privatePhotos: [...item.privatePhotos, result.image.originalUri],
+            }
+          : item,
+      ),
+    );
+  }
+
   const body = useMemo(() => {
     if (tab === "collection") {
       return (
         <CollectionScreen
           lastSavedTitle={lastSavedTitle}
           savedItems={savedItems}
+          onAddPhotoFromCamera={(savedItemId) => addPhotoToSavedCollectionItem(savedItemId, "camera")}
+          onAddPhotoFromGallery={(savedItemId) => addPhotoToSavedCollectionItem(savedItemId, "gallery")}
           onOpenIdentify={() => {
             setLastSavedTitle(null);
             setTab("identify");
             setScreen("identify");
           }}
+          onUpdateSavedItem={updateSavedCollectionItem}
         />
       );
     }
