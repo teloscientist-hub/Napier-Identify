@@ -239,6 +239,10 @@ export const styles = StyleSheet.create({
     paddingVertical: 12,
     fontSize: 16,
   },
+  multilineInput: {
+    minHeight: 92,
+    textAlignVertical: "top",
+  },
   progressStep: {
     flexDirection: "row",
     alignItems: "center",
@@ -269,6 +273,26 @@ export const styles = StyleSheet.create({
     borderTopColor: "#d8d1c4",
     paddingTop: 10,
     gap: 8,
+  },
+  photoGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  photoThumb: {
+    width: 92,
+    gap: 4,
+  },
+  photoThumbImage: {
+    width: 92,
+    height: 92,
+    borderRadius: 8,
+    backgroundColor: "#ddd6ca",
+  },
+  photoThumbLabel: {
+    color: "#6f604a",
+    fontSize: 12,
+    fontWeight: "700",
   },
   rank: {
     color: "#6f604a",

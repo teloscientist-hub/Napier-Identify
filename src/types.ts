@@ -74,6 +74,7 @@ export type QueuedCapture = {
 export type PieceDraft = {
   draftId: string;
   title: string;
+  description: string;
   createdAt: string;
   updatedAt: string;
   status: PieceDraftStatus;

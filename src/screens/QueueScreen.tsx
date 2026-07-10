@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, View } from "react-native";
+import { Image, Text, TextInput, View } from "react-native";
 import { DangerButton, PrimaryButton, QueryImagePreview, SecondaryButton } from "../components/ui";
 import { styles } from "../styles/styles";
 import { PieceDraft } from "../types";
@@ -8,6 +8,7 @@ export function QueueScreen({
   drafts,
   onOpenIdentify,
   onAddPhotoToDraft,
+  onUpdateDraft,
   onProcessDraft,
   onDeleteDraft,
   onDeleteCapture,
@@ -15,6 +16,7 @@ export function QueueScreen({
   drafts: PieceDraft[];
   onOpenIdentify: () => void;
   onAddPhotoToDraft: (draft: PieceDraft) => void;
+  onUpdateDraft: (draftId: string, updates: Pick<PieceDraft, "title" | "description">) => void;
   onProcessDraft: (draft: PieceDraft) => void;
   onDeleteDraft: (draftId: string) => void;
   onDeleteCapture: (draftId: string, captureId: string) => void;
@@ -43,10 +45,37 @@ export function QueueScreen({
               <Text style={styles.cardTitle}>{draft.title}</Text>
               <Text style={styles.statusPill}>{draft.status}</Text>
             </View>
+            <View style={styles.fieldGroup}>
+              <Text style={styles.label}>Piece name</Text>
+              <TextInput
+                style={styles.input}
+                value={draft.title}
+                onChangeText={(title) => onUpdateDraft(draft.draftId, { title, description: draft.description })}
+                placeholder="Example: gold floral brooch, estate tray 1"
+              />
+            </View>
+            <View style={styles.fieldGroup}>
+              <Text style={styles.label}>Description / notes</Text>
+              <TextInput
+                multiline
+                style={[styles.input, styles.multilineInput]}
+                value={draft.description}
+                onChangeText={(description) => onUpdateDraft(draft.draftId, { title: draft.title, description })}
+                placeholder="Describe what helps you recognize this piece later."
+              />
+            </View>
             <Text style={styles.meta}>
               {draft.captures.length} photo{draft.captures.length === 1 ? "" : "s"} attached
             </Text>
             <Text style={styles.meta}>Updated {new Date(draft.updatedAt).toLocaleString()}</Text>
+            <View style={styles.photoGrid}>
+              {draft.captures.map((capture, index) => (
+                <View key={capture.captureId} style={styles.photoThumb}>
+                  <Image source={{ uri: capture.image.originalUri }} style={styles.photoThumbImage} resizeMode="cover" />
+                  <Text style={styles.photoThumbLabel}>Photo {index + 1}</Text>
+                </View>
+              ))}
+            </View>
             <SecondaryButton
               label={draft.status === "saved" ? "Review Again" : "Identify This Piece"}
               onPress={() => onProcessDraft(draft)}

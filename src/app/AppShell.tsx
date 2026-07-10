@@ -128,6 +128,7 @@ export function AppShell() {
     const draft: PieceDraft = {
       draftId: `draft_${Date.now()}`,
       title: `Piece Draft ${draftNumber}`,
+      description: "",
       createdAt: now,
       updatedAt: now,
       status: "queued",
@@ -179,6 +180,21 @@ export function AppShell() {
     setPendingPhotoDraftId(draft.draftId);
     setTab("identify");
     setScreen("identify");
+  }
+
+  function updatePieceDraft(draftId: string, updates: Pick<PieceDraft, "title" | "description">) {
+    setPieceDrafts((drafts) =>
+      drafts.map((draft) =>
+        draft.draftId === draftId
+          ? {
+              ...draft,
+              title: updates.title,
+              description: updates.description,
+              updatedAt: new Date().toISOString(),
+            }
+          : draft,
+      ),
+    );
   }
 
   function processPieceDraft(draft: PieceDraft) {
@@ -338,6 +354,7 @@ export function AppShell() {
             setScreen("identify");
           }}
           onAddPhotoToDraft={startAddingPhotoToDraft}
+          onUpdateDraft={updatePieceDraft}
           onProcessDraft={processPieceDraft}
           onDeleteDraft={deletePieceDraft}
           onDeleteCapture={deletePieceDraftCapture}
