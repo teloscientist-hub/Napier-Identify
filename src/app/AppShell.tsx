@@ -182,6 +182,15 @@ export function AppShell() {
     setScreen("identify");
   }
 
+  function cancelCompanionPhotoCapture() {
+    setPendingPhotoDraftId(null);
+    setQueryImage(null);
+    setApiError(null);
+    setMediaError(null);
+    setTab("queue");
+    setScreen("identify");
+  }
+
   function updatePieceDraft(draftId: string, updates: Pick<PieceDraft, "title" | "description">) {
     setPieceDrafts((drafts) =>
       drafts.map((draft) =>
@@ -427,12 +436,14 @@ export function AppShell() {
     const pendingPhotoDraft = pieceDrafts.find((draft) => draft.draftId === pendingPhotoDraftId) ?? null;
     return (
       <IdentifyScreen
+        companionPieceTitle={pendingPhotoDraft?.title ?? null}
         captureContext={
           pendingPhotoDraft
             ? `Take or import another photo for ${pendingPhotoDraft.title}. Use this for the back, clasp, signature, side, or detail view.`
             : null
         }
         mediaError={mediaError}
+        onCancelCompanionPhoto={cancelCompanionPhotoCapture}
         onTakePhoto={takePhoto}
         onImportPhoto={importPhoto}
         onNoMatch={() => runSearch(true)}
