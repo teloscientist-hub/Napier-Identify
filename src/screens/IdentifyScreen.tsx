@@ -4,11 +4,13 @@ import { MockImage, PrimaryButton, SecondaryButton } from "../components/ui";
 import { styles } from "../styles/styles";
 
 export function IdentifyScreen({
+  captureContext,
   mediaError,
   onImportPhoto,
   onNoMatch,
   onTakePhoto,
 }: {
+  captureContext: string | null;
   mediaError: string | null;
   onImportPhoto: () => void;
   onNoMatch: () => void;
@@ -18,7 +20,9 @@ export function IdentifyScreen({
     <View style={styles.stack}>
       <MockImage label="Camera preview placeholder" />
       <Text style={styles.sectionTitle}>Identify a Napier piece</Text>
-      <Text style={styles.copy}>Take a photo or import an existing image. The first prototype uses mock results.</Text>
+      <Text style={styles.copy}>
+        {captureContext ?? "Take a photo or import an existing image. The first prototype uses mock results."}
+      </Text>
       {mediaError ? <Text style={styles.warning}>{mediaError}</Text> : null}
       <PrimaryButton label="Take Photo" onPress={onTakePhoto} />
       <SecondaryButton label="Import Photo" onPress={onImportPhoto} />

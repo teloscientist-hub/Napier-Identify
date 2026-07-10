@@ -7,12 +7,14 @@ import { PieceDraft } from "../types";
 export function QueueScreen({
   drafts,
   onOpenIdentify,
+  onAddPhotoToDraft,
   onProcessDraft,
   onDeleteDraft,
   onDeleteCapture,
 }: {
   drafts: PieceDraft[];
   onOpenIdentify: () => void;
+  onAddPhotoToDraft: (draft: PieceDraft) => void;
   onProcessDraft: (draft: PieceDraft) => void;
   onDeleteDraft: (draftId: string) => void;
   onDeleteCapture: (draftId: string, captureId: string) => void;
@@ -30,6 +32,7 @@ export function QueueScreen({
   return (
     <View style={styles.stack}>
       <Text style={styles.sectionTitle}>{drafts.length} piece draft{drafts.length === 1 ? "" : "s"}</Text>
+      <PrimaryButton label="Capture New Piece" onPress={onOpenIdentify} />
       {drafts.map((draft) => {
         const primaryCapture = draft.captures.find((capture) => capture.captureId === draft.primaryCaptureId) ?? draft.captures[0];
 
@@ -48,6 +51,7 @@ export function QueueScreen({
               label={draft.status === "saved" ? "Review Again" : "Identify This Piece"}
               onPress={() => onProcessDraft(draft)}
             />
+            <SecondaryButton label="Add Photo To This Piece" onPress={() => onAddPhotoToDraft(draft)} />
             {draft.captures.map((capture, index) => (
               <View key={capture.captureId} style={styles.photoRow}>
                 <Text style={styles.meta}>

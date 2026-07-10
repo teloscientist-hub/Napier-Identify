@@ -6,6 +6,7 @@ import { LocalQueryImage, PieceDraft } from "../types";
 
 export function CaptureReviewScreen({
   image,
+  targetPieceDraft,
   onUsePhoto,
   pieceDrafts,
   onAddAsNewPiece,
@@ -14,6 +15,7 @@ export function CaptureReviewScreen({
   onCrop,
 }: {
   image: LocalQueryImage | null;
+  targetPieceDraft: PieceDraft | null;
   onUsePhoto: () => void;
   pieceDrafts: PieceDraft[];
   onAddAsNewPiece: () => void;
@@ -25,6 +27,12 @@ export function CaptureReviewScreen({
     <View style={styles.stack}>
       <QueryImagePreview label={image ? `${image.source} image` : "Captured photo placeholder"} uri={image?.localUri ?? null} />
       <Text style={styles.sectionTitle}>Use this photo?</Text>
+      {targetPieceDraft ? (
+        <View style={styles.successBox}>
+          <Text style={styles.successTitle}>Adding photo to {targetPieceDraft.title}</Text>
+          <Text style={styles.copy}>Use this when this is another view of the same physical piece.</Text>
+        </View>
+      ) : null}
       <Text style={styles.warning}>This may be hard to identify if the jewelry is small or the background is busy.</Text>
       {image ? (
         <View style={styles.infoBlock}>
@@ -38,7 +46,14 @@ export function CaptureReviewScreen({
           <Text style={styles.bullet}>- Source: {image.source}</Text>
         </View>
       ) : null}
-      <PrimaryButton label="Use Photo" onPress={onUsePhoto} />
+      {targetPieceDraft ? (
+        <PrimaryButton label={`Add To ${targetPieceDraft.title}`} onPress={() => onAddToPieceDraft(targetPieceDraft.draftId)} />
+      ) : (
+        <PrimaryButton label="Use Photo" onPress={onUsePhoto} />
+      )}
+      {targetPieceDraft ? (
+        <SecondaryButton label="Use Photo For Search Instead" onPress={onUsePhoto} />
+      ) : null}
       <SecondaryButton label="Add As New Piece Draft" onPress={onAddAsNewPiece} />
       {pieceDrafts.length > 0 ? (
         <View style={styles.infoBlock}>

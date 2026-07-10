@@ -1,6 +1,6 @@
 export const appVersion = {
-  version: "0.1.5",
-  buildLabel: "piece-drafts-001",
+  version: "0.1.6",
+  buildLabel: "piece-draft-add-photo-001",
   releaseTrack: "Expo prototype",
-  releaseDate: "2026-07-09",
+  releaseDate: "2026-07-10",
 };

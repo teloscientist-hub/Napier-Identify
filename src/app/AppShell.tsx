@@ -46,6 +46,7 @@ export function AppShell() {
   const [savedItems, setSavedItems] = useState<SavedItem[]>([]);
   const [pieceDrafts, setPieceDrafts] = useState<PieceDraft[]>([]);
   const [activePieceDraftId, setActivePieceDraftId] = useState<string | null>(null);
+  const [pendingPhotoDraftId, setPendingPhotoDraftId] = useState<string | null>(null);
   const [lastSavedTitle, setLastSavedTitle] = useState<string | null>(null);
   const [history, setHistory] = useState<HistoryEntry[]>(initialHistory);
   const [privacy, setPrivacy] = useState<PrivacySettings>(defaultPrivacySettings);
@@ -72,6 +73,7 @@ export function AppShell() {
     setMediaError(null);
     setQueryImage(null);
     setActivePieceDraftId(null);
+    setPendingPhotoDraftId(null);
     setScreen("identify");
   }
 
@@ -138,6 +140,7 @@ export function AppShell() {
     setPieceDrafts((drafts) => [draft, ...drafts]);
     setQueryImage(null);
     setActivePieceDraftId(null);
+    setPendingPhotoDraftId(null);
     setTab("queue");
     setScreen("identify");
   }
@@ -163,7 +166,18 @@ export function AppShell() {
     );
     setQueryImage(null);
     setActivePieceDraftId(null);
+    setPendingPhotoDraftId(null);
     setTab("queue");
+    setScreen("identify");
+  }
+
+  function startAddingPhotoToDraft(draft: PieceDraft) {
+    setApiError(null);
+    setMediaError(null);
+    setQueryImage(null);
+    setActivePieceDraftId(null);
+    setPendingPhotoDraftId(draft.draftId);
+    setTab("identify");
     setScreen("identify");
   }
 
@@ -319,9 +333,11 @@ export function AppShell() {
         <QueueScreen
           drafts={pieceDrafts}
           onOpenIdentify={() => {
+            setPendingPhotoDraftId(null);
             setTab("identify");
             setScreen("identify");
           }}
+          onAddPhotoToDraft={startAddingPhotoToDraft}
           onProcessDraft={processPieceDraft}
           onDeleteDraft={deletePieceDraft}
           onDeleteCapture={deletePieceDraftCapture}
@@ -347,6 +363,7 @@ export function AppShell() {
       return (
         <CaptureReviewScreen
           image={queryImage}
+          targetPieceDraft={pieceDrafts.find((draft) => draft.draftId === pendingPhotoDraftId) ?? null}
           pieceDrafts={pieceDrafts}
           onUsePhoto={() => setScreen("hints")}
           onAddAsNewPiece={addCurrentPhotoAsNewPiece}
@@ -390,7 +407,20 @@ export function AppShell() {
         />
       );
     }
-    return <IdentifyScreen mediaError={mediaError} onTakePhoto={takePhoto} onImportPhoto={importPhoto} onNoMatch={() => runSearch(true)} />;
+    const pendingPhotoDraft = pieceDrafts.find((draft) => draft.draftId === pendingPhotoDraftId) ?? null;
+    return (
+      <IdentifyScreen
+        captureContext={
+          pendingPhotoDraft
+            ? `Take or import another photo for ${pendingPhotoDraft.title}. Use this for the back, clasp, signature, side, or detail view.`
+            : null
+        }
+        mediaError={mediaError}
+        onTakePhoto={takePhoto}
+        onImportPhoto={importPhoto}
+        onNoMatch={() => runSearch(true)}
+      />
+    );
   }, [
     apiError,
     apiMode,
@@ -403,6 +433,7 @@ export function AppShell() {
     lastSavedTitle,
     mediaError,
     pieceDrafts,
+    pendingPhotoDraftId,
     privacy,
     queryImage,
     savedItems,
