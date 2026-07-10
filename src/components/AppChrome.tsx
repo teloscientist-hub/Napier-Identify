@@ -8,11 +8,15 @@ import { AppTab } from "../types";
 
 export function AppChrome({
   activeTab,
+  canGoBack,
   children,
+  onBack,
   onSelectTab,
 }: {
   activeTab: AppTab;
+  canGoBack: boolean;
   children: ReactNode;
+  onBack: () => void;
   onSelectTab: (tab: AppTab) => void;
 }) {
   const insets = useSafeAreaInsets();
@@ -23,13 +27,20 @@ export function AppChrome({
       <StatusBar style="dark" />
       <View style={styles.shell}>
         <View style={styles.header}>
-          <View>
+          <View style={styles.headerTitleBlock}>
             <Text style={styles.eyebrow}>Napier Visual Reference</Text>
             <Text style={styles.title}>{activeLabel}</Text>
           </View>
-          <TouchableOpacity style={styles.headerSettingsButton} onPress={() => onSelectTab("settings")}>
-            <Text style={styles.headerSettingsText}>Settings</Text>
-          </TouchableOpacity>
+          <View style={styles.headerActions}>
+            {canGoBack ? (
+              <TouchableOpacity style={styles.headerBackButton} onPress={onBack}>
+                <Text style={styles.headerBackText}>Back</Text>
+              </TouchableOpacity>
+            ) : null}
+            <TouchableOpacity style={styles.headerSettingsButton} onPress={() => onSelectTab("settings")}>
+              <Text style={styles.headerSettingsText}>Settings</Text>
+            </TouchableOpacity>
+          </View>
         </View>
         <ScrollView contentContainerStyle={[styles.content, { paddingBottom: Math.max(insets.bottom + 96, 132) }]}>
           {children}

@@ -502,8 +502,56 @@ export function AppShell() {
     tab,
   ]);
 
+  const canGoBack = tab !== "identify" || screen !== "identify" || pendingPhotoDraftId !== null;
+
+  function goBackOneStep() {
+    setApiError(null);
+    setMediaError(null);
+
+    if (screen === "itemDetail") {
+      setScreen("results");
+      return;
+    }
+    if (screen === "results") {
+      setScreen("hints");
+      return;
+    }
+    if (screen === "searchProgress") {
+      setScreen("hints");
+      return;
+    }
+    if (screen === "hints") {
+      setScreen("captureReview");
+      return;
+    }
+    if (screen === "crop") {
+      setScreen("captureReview");
+      return;
+    }
+    if (screen === "captureReview") {
+      if (activePieceDraftId) {
+        setActivePieceDraftId(null);
+        setQueryImage(null);
+        setTab("queue");
+        setScreen("identify");
+        return;
+      }
+      setQueryImage(null);
+      setScreen("identify");
+      return;
+    }
+    if (pendingPhotoDraftId) {
+      cancelCompanionPhotoCapture();
+      return;
+    }
+    if (tab !== "identify") {
+      setTab("identify");
+      setScreen("identify");
+    }
+  }
+
   return (
-    <AppChrome activeTab={tab} onSelectTab={selectTab}>
+    <AppChrome activeTab={tab} canGoBack={canGoBack} onBack={goBackOneStep} onSelectTab={selectTab}>
       {body}
     </AppChrome>
   );

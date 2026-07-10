@@ -20,6 +20,30 @@ export const styles = StyleSheet.create({
     justifyContent: "space-between",
     gap: 12,
   },
+  headerTitleBlock: {
+    flex: 1,
+  },
+  headerActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  headerBackButton: {
+    minHeight: 44,
+    minWidth: 72,
+    borderRadius: 8,
+    backgroundColor: "#ffffff",
+    borderColor: "#b8ad9b",
+    borderWidth: StyleSheet.hairlineWidth,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 10,
+  },
+  headerBackText: {
+    color: "#2f5d50",
+    fontSize: 14,
+    fontWeight: "800",
+  },
   eyebrow: {
     color: "#6f604a",
     fontSize: 12,
